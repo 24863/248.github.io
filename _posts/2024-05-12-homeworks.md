@@ -111,36 +111,6 @@ Escape some text for use in XML.
 {{ page.content | xml_escape }}
 
 
-#Markdownify
-
-Convert a Markdown-formatted string into HTML.
-
-{{ page.excerpt | markdownify }}
-
-#Converting Sass/SCSS
-
-Convert a Sass- or SCSS-formatted string into CSS.
-
-{{ some_sass | sassify }}
-
-{{ some_scss | scssify }}
-
-
-#Data To JSON
-
-Convert Hash or Array to JSON.
-
-{{ site.data.projects | jsonify }}
-
-
-#Normalize Whitespace
-
-Replace any occurrence of whitespace with a single space.
-
-{{ "a \n b" | normalize_whitespace }}
-
-
-
 
 
 
