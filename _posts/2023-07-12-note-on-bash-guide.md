@@ -15,904 +15,282 @@ To make common tasks easier, Jekyll even adds a few handy filters of its own, al
 
 # Liquid Filters
 
-All of the standard Liquid [filters](#standard-liquid-filters) are supported (see below).
-
-To make common tasks easier, Jekyll even adds a few handy filters of its own,
-all of which you can find on this page. You can also create your own filters
-using [plugins](/docs/plugins/).
-
-<div class="mobile-side-scroller">
-<table>
-  <thead>
-    <tr>
-      <th>Description</th>
-      <th><span class="filter">Filter</span> and <span class="output">Output</span></th>
-    </tr>
-  </thead>
-  <tbody>
-    {% for filter in site.data.jekyll_filters %}
-      <tr>
-        <td>
-          <p id="{{ filter.name | slugify }}" class="name"><strong>{{ filter.name }}</strong></p>
-          <p>
-            {{- filter.description -}}
-            {%- if filter.version_badge %}
-              <span class="version-badge" title="This filter is available from version {{ filter.version_badge }}">
-                {{- filter.version_badge -}}
-              </span>
-            {% endif -%}
-          </p>
-        </td>
-        <td class="align-center">
-          {%- for example in filter.examples %}
-            <p><code class="filter">{{ example.input }}</code></p>
-            {% if example.output %}<p><code class="output">{{ example.output }}</code></p>{% endif %}
-          {% endfor -%}
-        </td>
-      </tr>
-    {% endfor %}
-  </tbody>
-</table>
-</div>
-
-### Options for the `slugify` filter
-
-The `slugify` filter accepts an option, each specifying what to filter.
-The default is `default`. They are as follows (with what they filter):
-
-- `none`: no characters
-- `raw`: spaces
-- `default`: spaces and non-alphanumeric characters
-- `pretty`: spaces and non-alphanumeric characters except for `._~!$&'()+,;=@`
-- `ascii`: spaces, non-alphanumeric, and non-ASCII characters
-- `latin`: like `default`, except Latin characters are first transliterated (e.g. `àèïòü` to `aeiou`) {%- include docs_version_badge.html version="3.7.0" -%}.
-
-### Detecting `nil` values with `where` filter {%- include docs_version_badge.html version="4.0" -%}
-
-You can use the `where` filter to detect documents and pages with properties that are `nil` or `""`. For example,
-
-{% raw %}
-```liquid
-// Using `nil` to select posts that either do not have `my_prop`
-// defined or `my_prop` has been set to `nil` explicitly.
-{% assign filtered_posts = site.posts | where: 'my_prop', nil %}
-```
-{% endraw %}
-
-{% raw %}
-```liquid
-// Using Liquid's special literal `empty` or `blank` to select
-// posts that have `my_prop` set to an empty value.
-{% assign filtered_posts = site.posts | where: 'my_prop', empty %}
-```
-{% endraw %}
-
-### Binary operators in `where_exp` filter {%- include docs_version_badge.html version="4.0" -%}
-
-You can use Liquid binary operators `or` and `and` in the expression passed to the `where_exp` filter to employ multiple
-conditionals in the operation.
-
-For example, to get a list of documents on English horror flicks, one could use the following snippet:
-
-{% raw %}
-```liquid
-{{ site.movies | where_exp: "item", "item.genre == 'horror' and item.language == 'English'" }}
-```
-{% endraw %}
-
-Or to get a list of comic-book based movies, one may use the following:
-
-{% raw %}
-```liquid
-{{ site.movies | where_exp: "item", "item.sub_genre == 'MCU' or item.sub_genre == 'DCEU'" }}
-```
-{% endraw %}
-
-### Standard Liquid Filters
-
-For your convenience, here is the list of all [Liquid filters]({{ page.shopify_filter_url }}) with links to examples in the official Liquid documentation.
-
-{% for filter in page.shopify_filters %}
-- [{{ filter }}]({{ filter | prepend: page.shopify_filter_url | append: '/' }})
-{% endfor %}
-shFAQ/035>
-
-The best way to parse options and arguments is to do it manually. But this way
-does not handle single-letter options concatenated together (like -xvf). Fancy
-option processing is only desirable if you are releasing the program for general
-use.
-
-```bash
-#!/bin/sh
-# POSIX
-
-die() {
-    printf '%s\n' "$1" >&2
-    exit 1
-}
-
-# Initialize all the option variables.
-# This ensures we are not contaminated by variables from the environment.
-file=
-verbose=0
-
-while :; do
-    case $1 in
-        -h|-\?|--help)
-            show_help    # Display a usage synopsis.
-            exit
-            ;;
-        -f|--file)       # Takes an option argument; ensure it has been specified.
-            if [ "$2" ]; then
-                file=$2
-                shift
-            else
-                die 'ERROR: "--file" requires a non-empty option argument.'
-            fi
-            ;;
-        --file=?*)
-            file=${1#*=} # Delete everything up to "=" and assign the remainder.
-            ;;
-        --file=)         # Handle the case of an empty --file=
-            die 'ERROR: "--file" requires a non-empty option argument.'
-            ;;
-        -v|--verbose)
-            verbose=$((verbose + 1))  # Each -v adds 1 to verbosity.
-            ;;
-        --)          # End of all options.
-            shift
-            break
-            ;;
-        -?*)
-            printf 'WARN: Unknown option (ignored): %s\n' "$1" >&2
-            ;;
-        *)           # Default case: No more options, so break out of the loop.
-            break
-    esac
-
-    shift
-done
-
-# if --file was provided, open it for writing, else duplicate stdout.
-if [ "$file" ]; then
-    exec 3> "$file"
-else
-    exec 3>&1
-fi
-
-# Rest of the program here.
-# If there are input files (for example) that follow the options, they
-# will remain in the "$@" positional parameters.
-```
-
-Another way is to use getopts, only use it if you need concatenated options.
-
-# Special Chars
-
-`$` expansion:
+Relative URL
 
-* parameter: `${var}` or `$var`.
-* command substitution: `$(command)`.
-* arithmetic: `$((expression))`.
-
-quotes:
-
-* `' '`: no expansion, ignore escape `\`.
-* `" "`: with expansion.
-
-...
-
-# Parameters
-
-## Varialbes
-
-Assignment:
+Prepend baseurl config value to the input to convert a URL path into a relative URL. This is recommended for a site that is hosted on a subpath of a domain.
 
-    identifier=data
-
-NOTE that there is no space around =.
+{{ "/assets/style.css" | relative_url }}
 
-Identifier can begin with letter/underscore, can contain letter/digit/underscore.
+/my-baseurl/assets/style.css
 
-We can also use `declare` to specify variable types:
+Absolute URL
 
-```sh
-# integer. rarely used, better use arithmetic command "(( ))" or "let"
-declare -i var
-# indexed array. rarely used, better use "array()".
-declare -a var
-# associative array.
-declare -A var
-# read only:
-declare -r var
-# export. variables declared with -x will be inherited by any child process.
-declare -x var
-```
+Prepend url and baseurl values to the input to convert a URL path to an absolute URL.
 
-<a name="special_params"></a>
-## Special Parameters
+{{ "/assets/style.css" | absolute_url }}
 
-Sepcial parameters is preset by BASH, and read-only.
+http://example.com/my-baseurl/assets/style.css
 
-    $0      script name/path
-    $1      $2, ${10} etc: positional parameter, contain passed-in arguments
-    $*      string of all positional parameter
-    $@      list of all positional parameter
-    $#      number of positional parameter
-    $?      exit code of most recently completed foreground command
-    $$      PID of current shell
-    $!      PID of most recently executed background command
-    $_      last argument of last command
+Date to XML Schema
 
-## Concatenate
+Convert a Date into XML Schema (ISO 8601) format.
 
-To concatenate additional string into variable:
+{{ site.time | date_to_xmlschema }}
 
-```sh
-var=$var1$var2
+2008-11-07T13:07:54-08:00
 
-# to include whitespaces, use " ".
-var="$var1 - $var2"
+Date to RFC-822 Format
 
+Convert a Date into the RFC-822 format used for RSS feeds.
 
-# to diambiguate variable, use {} or "":
-var="$var1"xyzzy
-var=${var1}xyzzy
+{{ site.time | date_to_rfc822 }}
 
-# command substitue:
-logname="log.$(date +%Y-%m-%d)"
+Mon, 07 Nov 2008 13:07:54 -0800
 
-# concatenate with reassignment.
-string="$string more data here"
+Date to String
 
-# concatenate two arrays. the outer ( ) is used to reassemble into array.
-var=( "${arr1[@]}" "${arr2[@]}" )
-```
+Convert a date to short format.
 
-<a name="param_expansion"></a>
-## Parameter Expansion (PE)
+{{ site.time | date_to_string }}
 
-    ${parameter:-word}
+07 Nov 2008
 
-Use Default Value. If 'parameter' is unset or null, 'word' (which may be an
-expansion) is substituted. Otherwise, the value of 'parameter' is substituted.
+Date to String in ordinal US style
 
-    ${parameter:=word}
+Format a date to ordinal, US, short format. 3.8.0
 
-Assign Default Value. If 'parameter' is unset or null, 'word' (which may be an
-expansion) is assigned to 'parameter'. The value of 'parameter' is then
-substituted.
+{{ site.time | date_to_string: "ordinal", "US" }}
 
-    ${parameter:+word}
+Nov 7th, 2008
 
-Use Alternate Value. If 'parameter' is null or unset, nothing is substituted,
-otherwise 'word' (which may be an expansion) is substituted.
+Date to Long String
 
-    ${parameter:offset:length}
+Format a date to long format.
 
-Substring Expansion. Expands to up to 'length' characters of 'parameter'
-starting at the character specified by 'offset' (0-indexed). If ':length' is
-omitted, go all the way to the end. If 'offset' is negative (use parentheses!),
-count backward from the end of 'parameter' instead of forward from the
-beginning. If 'parameter' is @ or an indexed array name subscripted by @ or
-`*`, the result is 'length' positional parameters or members of the array,
-respectively, starting from 'offset'.
+{{ site.time | date_to_long_string }}
 
-    ${#parameter}
+07 November 2008
 
-The length in characters of the value of 'parameter' is substituted.
-If 'parameter' is an array name subscripted by @ or `*`, return the number of
-elements.
+Date to Long String in ordinal UK style
 
-    ${parameter#pattern}
+Format a date to ordinal, UK, long format. 3.8.0
 
-The 'pattern' is matched against the beginning of 'parameter'. The result is the
-expanded value of 'parameter' with the shortest match deleted. If 'parameter'
-is an array name subscripted by @ or ``*``, this will be done on each element.
-Same for all following items.
+{{ site.time | date_to_long_string: "ordinal" }}
 
-    ${parameter##pattern}
+7th November 2008
 
-As above, but the longest match is deleted.
+Where
 
-    ${parameter%pattern}
+Select all the objects in an array where the key has the given value.
 
-The 'pattern' is matched against the end of 'parameter'. The result is the
-expanded value of 'parameter' with the shortest match deleted.
+{{ site.members | where:"graduation_year","2014" }}
 
-    ${parameter%%pattern}
+Where Expression
 
-As above, but the longest match is deleted.
+Select all the objects in an array where the expression is true. 3.2.0
 
-    ${parameter/pat/string}
+{{ site.members | where_exp:"item",
+"item.graduation_year == 2014" }}
 
-Results in the expanded value of 'parameter' with the first (unanchored) match
-of 'pat' replaced by 'string'. Assume null string when the '/string' part is
-absent.
+{{ site.members | where_exp:"item",
+"item.graduation_year < 2014" }}
 
-    ${parameter//pat/string}
+{{ site.members | where_exp:"item",
+"item.projects contains 'foo'" }}
 
-As above, but every match of 'pat' is replaced.
+Find
 
-    ${parameter/#pat/string}
+Return the first object in an array for which the queried attribute has the given value or return nil if no item in the array satisfies the given criteria. 4.1.0
 
-As above, but matched against the beginning. Useful for adding a common prefix
-with a null pattern: `${array[@]/#/prefix}`.
+{{ site.members | find: "graduation_year", "2014" }}
 
-    ${parameter/%pat/string}
+Find Expression
 
-As above, but matched against the end. Useful for adding a common suffix with a
-null pattern.
+Return the first object in an array for which the given expression evaluates to true or return nil if no item in the array satisfies the evaluated expression. 4.1.0
 
-# Pattern
+{{ site.members | find_exp:"item",
+"item.graduation_year == 2014" }}
 
-"pattern" is a string with a special format designed to match filenames, or to
-check, classify or validate data strings.
+{{ site.members | find_exp:"item",
+"item.graduation_year < 2014" }}
 
-There are three types of patterns can be used in shell: glob, extended glob and
-regular expression.
+{{ site.members | find_exp:"item",
+"item.projects contains 'foo'" }}
 
-Glob or extended glob can be used to do filename expansions. When bash sees the
-glob, for example a `*`. It expands this glob, by looking in the current
-directory and matching it against all files there. Any filenames that match the
-glob are gathered up and sorted, and then the list of filenames is used in
-place of the glob.
+Group By
 
-All of them can do pattern matching in `[[ ]]` or `case`.
+Group an array's items by a given property.
 
-## Glob
+{{ site.members | group_by:"graduation_year" }}
 
-Anchored at both ends.
+[{"name"=>"2013", "items"=>[...]},
+{"name"=>"2014", "items"=>[...]}]
 
-Metachars:
+Group By Expression
 
-    *       Matches any string, including the null string.
-    ?       Matches any single character.
-    [...]   Matches any one of the enclosed characters.
+Group an array's items using a Liquid expression. 3.4.0
 
-## Extended Glob
+{{ site.members | group_by_exp: "item",
+"item.graduation_year | truncate: 3, ''" }}
 
-Extended glob can be enabled by `shopt -s extglob`.
+[{"name"=>"201", "items"=>[...]},
+{"name"=>"200", "items"=>[...]}]
 
-Metachars (The 'list' inside the parentheses is a list of globs or extended globs
-separated by the `|` character).
+XML Escape
 
-    ?(list)     Matches zero or one occurrence of the given patterns
-    *(list)     Matches zero or more occurrences of the given patterns
-    +(list)     Matches one or more occurrences of the given patterns
-    @(list)     Matches one of the given patterns
-    !(list)     Matches anything but the given patterns
+Escape some text for use in XML.
 
-## Regular Expression
+{{ page.content | xml_escape }}
 
-Bash use ERE (Extended Regular Expression) dialect.
+CGI Escape
 
-Captured string by capture groups are assigned to `BASH_REMATCH` array.
+CGI escape a string for use in a URL. Replaces any special characters with appropriate %XX replacements. CGI escape normally replaces a space with a plus + sign.
 
-Syntax: `$var =~ $pattern`.
+{{ "foo, bar; baz?" | cgi_escape }}
 
-# Brace Expansion
+foo%2C+bar%3B+baz%3F
 
-* list: `{a,e}`
-* range: `{0..9}`, `{b..Y}`
+URI Escape
 
-The result of brace expansion is NOT sorted.
+Percent encodes any special characters in a URI. URI escape normally replaces a space with %20. Reserved characters will not be escaped.
 
-# Test And Conditional
+{{ "http://foo.com/?q=foo, \bar?" | uri_escape }}
 
-## Exit Code
+http://foo.com/?q=foo,%20%5Cbar?
 
-`exit` command can be used to specify a exit code range from 0~255, typically code
-0 indicate success.
+Number of Words
 
-## Control Operator
+Count the number of words in some text.
+From v4.1.0, this filter takes an optional argument to control the handling of Chinese-Japanese-Korean (CJK) characters in the input string.
+Passing 'cjk' as the argument will count every CJK character detected as one word irrespective of being separated by whitespace.
+Passing 'auto' (auto-detect) works similar to 'cjk' but is more performant if the filter is used on a variable string that may or may not contain CJK chars.
 
-We can use short-curcuit for simple cases:
+{{ "Hello world!" | number_of_words }}
 
-    <if success> && <then do this>
-    <if failed> || <then do this>
+2
 
-## Grouping Statement
+{{ "你好hello世界world" | number_of_words }}
 
-We can group multiple command inside `{ }`.
+1
 
-NOTE that you need a semicolon or newline before the closing curly brace. Also
-the two spaces after { and before } is required.
+{{ "你好hello世界world" | number_of_words: "cjk" }}
 
-Example:
+6
 
-* Grouping conditional operator:
+{{ "你好hello世界world" | number_of_words: "auto" }}
 
-    ```sh
-    cd "$appdir" || { echo "Please create the appdir and try again" >&2; exit 1; }
-    ```
+6
 
-* Redirect to group of statements:
+Array to Sentence
 
-    ```sh
-    {
-        read firstLine
-        read secondLine
-        while read otherLine; do
-            something
-        done
-    } < file
-    ```
+Convert an array into a sentence. Useful for listing tags. Optional argument for connector.
 
-## Conditional Blocks
+{{ page.tags | array_to_sentence_string }}
 
-`true` and `false` **is command** that always exit success or fail.
+foo, bar, and baz
 
-### Choices
+{{ page.tags | array_to_sentence_string: "or" }}
 
-if.
+foo, bar, or baz
 
-```sh
-if COMMANDS; then
-    OTHER COMMANDS
-elif COMMANDS; then
-    OTHER COMMANDS
-else
-    OTHER COMMANDS
-fi
-```
+Markdownify
 
-case.
+Convert a Markdown-formatted string into HTML.
 
-```sh
-case $LANG in
-    en*) echo 'Hello!' ;;
-    fr*) echo 'Salut!' ;;
-    de*) echo 'Guten Tag!' ;;
-    nl*) echo 'Hallo!' ;;
-    it*) echo 'Ciao!' ;;
-    es*) echo 'Hola!' ;;
-    C|POSIX) echo 'hello world' ;;
-    *)   echo 'I do not speak your language.' ;;
-esac
-```
+{{ page.excerpt | markdownify }}
 
-select.
+Smartify
 
-```sh
-echo "Which of these does not belong in the group?"; \
-select choice in Apples Pears Crisps Lemons Kiwis; do
-if [[ $choice = Crisps ]]
-then echo "Correct!  Crisps are not fruit."; break; fi
-echo "Errr... no.  Try again."
-done
-```
+Convert "quotes" into “smart quotes.”
 
-### test, [, [[
+{{ page.title | smartify }}
 
-`[` **is a command** alias to 'test' that receive four arguments, so `[ "$a" = "$b" ]`
-means run `[` with argument `$a`, `=`, `$b` and required `]`.
+Converting Sass/SCSS
 
-`[[` is **a shell keyword**, it parse its arguments *before* bash expand them.
+Convert a Sass- or SCSS-formatted string into CSS.
 
-**When not quoting right-hand side, `[[` do pattern matching**:
+{{ some_sass | sassify }}
 
-```sh
-foo=[a-z]* name=lhunath
+{{ some_scss | scssify }}
 
-[[ $name = $foo   ]] && echo "Name $name matches pattern $foo"
-# Name lhunath matches pattern [a-z]*
+Slugify
 
-[[ $name = "$foo" ]] || echo "Name $name is not equal to the string $foo"
-# Name lhunath is not equal to the string [a-z]*
-```
+Convert a string into a lowercase URL "slug". See below for options.
 
-ALL supported operators:
+{{ "The _config.yml file" | slugify }}
 
-    operator            desc
-    ---------------------------------------------------------
-    =, !=               string comparision
-    -eq, -ne, -lt       number comparision
-    -gt, -le, -ge
-    -z, -n              empty test
-    ! EXPR              logical NOT
-    ---------------------------------------------------------
-    -e FILE             True if file exists
-    -f FILE             True if file is a regular file
-    -d FILE             True if file is a directory
-    -h FILE             True if file is a symbolic link
-    -p PIPE             True if pipe exists
-    -r FILE             True if file is readable by you
-    -s FILE             True if file exists and is not empty
-    -t FD               True if FD is opened on a terminal.
-    -w FILE             True if the file is writable by you.
-    -x FILE             True if the file is executable by you.
-    -O FILE             True if the file is effectively owned by you.
-    -G FILE             True if the file is effectively owned by your group.
-    FILE -nt FILE       True if the first file is newer than the second.
-    FILE -ot FILE       True if the first file is older than the second.
+the-config-yml-file
 
-`[` ONLY operators. NOTE that (,  ), <, > need to be escaped.
+{{ "The _config.yml file" | slugify: "pretty" }}
 
-    operator            desc
-    ---------------------------------------
-    \(, \)              expression group
-    \<, \>              string lesser, greater
-    -a, -o              logical AND, OR
+the-_config.yml-file
 
-`[[` ONLY operators.
+{{ "The _cönfig.yml file" | slugify: "ascii" }}
 
-    operator            desc
-    ---------------------------------------
-    ()                  expression group
-    <, >                string lesser, greater
-    &&, ||              logical AND, OR
-    = pat, == pat       pattern matching
-    != pat, =~ REGEX
-    FILE -ef FILE       files are the same
+the-c-nfig-yml-file
 
-## Conditional Loop
+{{ "The cönfig.yml file" | slugify: "latin" }}
 
-while.
+the-config-yml-file
 
-```sh
-while COMMAND; do
-    OTHER COMMAND
-done
-```
+Data To JSON
 
-until (in practice, most people simply use `while !`).
+Convert Hash or Array to JSON.
 
-```sh
-until COMMAND; do
-    OTHER COMMAND
-done
-```
+{{ site.data.projects | jsonify }}
 
-for.
+Normalize Whitespace
 
-```sh
-for (( INIT; EVALUATE; STEP )); do
-    OTHER COMMAND
-done
-```
+Replace any occurrence of whitespace with a single space.
 
-for-in.
+{{ "a \n b" | normalize_whitespace }}
 
-```sh
-for ITEM in WORDS; do
-    OTHER COMMAND
-done
-```
+Sort
 
-NOTE that a simple `for ITEM` is equivalent to `for ITEM in "$[@]"`.
+Sort an array. Optional arguments for hashes 1. property name 2. nils order (first or last).
 
-`continue` or `break` can be used in all of them.
+{{ page.tags | sort }}
 
-For vs Xargs:
+{{ site.posts | sort: "author" }}
 
-* If you need to execute more than one operator for the same item (file) from a
-  list, use for loop.
-* If you need to apply any conditions before acting, use for loop.
+{{ site.pages | sort: "title", "last" }}
 
-# Array
+Sample
 
-Array is zero-based index. It's important to keep our data safely contained in
-the array as long as possible.
+Pick a random value from an array. Optionally, pick multiple values.
 
-Associative array is available since Bash 4.
+{{ site.pages | sample }}
 
-Creating Array.
+{{ site.pages | sample: 2 }}
 
-```sh
-# from a word list
-a=(word1 word2 "$word3")
-# with glob
-a=(*.png *.jpg)
-# spared array
-a=([0]="bob" [1]="peter" [20]="$USER")
-# from command output. NUL byte is often the best choice for delim, like:
-files=()
-while read -r -d ''; do
-    files+=("$REPLY")
-done < <(find /foo -print0)
-```
+To Integer
 
-Using Array:
+Convert a string or boolean to integer.
 
-    declare -p a        Show/dump the array, in a bash-reusable form
-    "${a[i]}"           Reference one element
-    "$(( a[i] + 5 ))"   Reference one element, in a math context
-    a[i+1]=word         Set one element, note the index is in a math context
-    a[i]+=suffix        Append suffix to one element
-    a+=(word ...) | a+=([3]=word3 word4 [i]+=word_i_suffix)
-                        Append more elements
-    unset 'a[i]'        Unset one element. Note we use quotes to avoid a[i] intepreted as glob
-    "${#a[@]}"          Number of elements (size, length)
+{{ some_var | to_integer }}
 
-Expand Array:
+Array Filters
 
-    "${a[@]}"           Expand all elements as a list of words
-    "${!a[@]}"          Expand all indices as a list of words (bash 3.0)
-    "${a[*]}"           Expand all elements as a single word, with the first char
-                        of IFS as separator
-    "${a[@]:start:len}" Expand a range of elements as a list of words
-    ---------------------------------------------------------------------------
-    "${a[@]#trimstart}"         Expand all elements as a list of words, with
-    "${a[@]%trimend}"           modifications applied to each element separately.
-    "${a[@]//search/repl}"
+Push, pop, shift, and unshift elements from an Array. These are NON-DESTRUCTIVE, i.e. they do not mutate the array, but rather make a copy and mutate that.
 
-# Input And Output
+{{ page.tags | push: "Spokane" }}
 
-Input can come from:
+["Seattle", "Tacoma", "Spokane"]
 
-* Command-line arguments (which are placed in the positional parameters)
-* Environment variables, inherited from whatever process started the script
-* Files
-* Anything else a File Descriptor can point to (pipes, terminals, sockets, etc.)
+{{ page.tags | pop }}
 
-Output can go to:
+["Seattle"]
 
-* Files
-* Anything else a File Descriptor can point to
-* Command-line arguments to some other program
-* Environment variables passed to some other program
+{{ page.tags | shift }}
 
-## Command-line Arguments
+["Tacoma"]
 
-See [special parameters](#special_params)
+{{ page.tags | unshift: "Olympia" }}
 
-## Environment
+["Olympia", "Seattle", "Tacoma"]
 
-Environments can be set by the following ways:
+Inspect
 
-* in user dot files: affect every program
-* on the fly: affect only current typed command: `$ LANG=C ls /tpm`
-* export: affect only child process: `export ENV=val`
+Convert an object into its String representation for debugging.
 
-## File Descriptors (FDs)
-
-File descriptors are the way programs refer to files, or to other resources that
-work like files(such as pipes, devices, sockets, or terminals). FDs are kind of
-like pointers to sources of data, or places data can be written. When something
-reads from or writes to that FD, the data is read from or written to that FD's
-resource.
-
-By default, every new process starts with three open FDs:
-
-* Standard Input (`stdin`): File Descriptor 0
-* Standard Output (`stdout`): File Descriptor 1
-* Standard Error (`stderr`): File Descriptor 2
-
-## Redirection
-
-"Redirection" is the practice of changing a FD to read its input from, or send
-its output to, a different location.
-
-Redirection apply only to one command/**loop**, and occurs before the
-command/loop is executed.
-
-Syntax:
-
-* change target FD location: `>` or `<` preceded by FD number(default to
-  `stdout` or `stdin`)
-* appending: `>>` or `<<`
-* duplicate target FD: `&` followed by FD number
-* space between redirection operator and file is optional, means `2>error` is okay
-
-Examples:
-
-    >, 1>               changes the stdout FD destination
-    <, 0<               changes the stdin FD destination
-    2> error            change the stderr FD destination to file error
-    2> /dev/null        change the stderr FD destination to file /dev/null (silent errors)
-    > logfile 2>&1      change stdout to logfile, then duplicate stdout and put it in stderr
-    &> logfile          same as above, redirecting both stdout and stderr to logfile, NOT portable
-
-## Heredocs And Herestrings
-
-Heredocs and Herestrings are themselves redirects just like any other, so
-additional redirections can occur on the same line.
-
-Heredoc.
-
-```sh
-# with indentation, and Bash substitution.
-level=1
-cat <<END # sentinel
-    indented by "${level}"
-END
-
-# output:
-#   indented by "1"
-```
-
-* use `-END` to auto-remove `tab` (but NOT spaces).
-* use `'END'` to avoid Bash substitution.
-* use `-'END'` to do both.
-
-Herestring.
-
-```sh
-# less portable, with Bash substitution.
-grep proud <<<"$USER sits proudly on his throne in $HOSTNAME."
-```
-
-## Pipes
-
-`|`: Connects the stdout of one process to the stdin of another.
-
-FIFOs aka "named pipes" accomplish the same but through a filename.
-
-NOTE: The pipe operator creates a subshell environment for each command. This is
-important to know because any variables that you modify or initialize inside
-the second command will appear unmodified outside of it.
-
-## Process Substitution
-
-Convenient way to use named pipes without having to create temporary files.
-Whenever you think you need a temporary file to do something, process
-substitution might be a better way to handle things.
-
-`<()`: put command output in a named pipe.
-
-```sh
-$ diff -y <(head -n 1 .dictionary) <(tail -n 1 .dictionary)
-```
-
-`>()`: redirect the file to the command's input.
-
-```sh
-$ tar -cf >(ssh host tar xf -) .
-```
-
-# Compound Commands
-
-`if`, `for`, `[[`... are all compound commands.
-
-`function` and `alias` are not compound commands, but works similar.
-
-## Subshell
-
-Similar to a child process, except that more information is inherited.
-
-When the subshell terminates, the cd command's effect is gone.
-
-Subshell is created implicitly for each command in pipeline, and explicitly by
-using `()` around a command.
-
-## Command grouping
-
-`{}`: Allow a collection of commands to be considered as a whole with regards to
-redirection and control flow.
-
-## Arithmetic Evaluation: let, (( ))
-
-Two ways to do arithmetic:
-
-1. use `let`: `let a=4+5`, `let a='(5+2)*3'`.
-2. use compound command `(())`: `((a=(5+2)*3))`.
-
-* can be used as command in `[[`
-* can do arithmetic substitution: `echo "There are $(($rows * $columsn)) cells`
-* can do ternary: `((abs= (a >= 0) ? a : -a))`
-* can use integer as truth value: `if ((flag)); then echo "uh oh, our flag is up"; fi`,
-  NOTE that `flag` don't even need `$`.
-
-## Alias
-
-We can use `alias`, `unalias` to make or delete a alias.
-
-If you need complex behavior, use a function instead.
-
-## Function
-
-```sh
-dummy() {
-    local i # local variable
-    echo "$1" # use parameter
-    return 9 # return code
-}
-
-# call
-dummy one
-r=dummy
-t=$(dummy "two")
-echo "$r" "$t" "$?"
-
-# outputs:
-# one
-# dummy two 9
-```
-
-<a name="expansion"></a>
-# Expansion (By Order)
-
-1. Brace Expansion.
-
-```sh
-echo a{d,c,b}e
-# ade ace abe
-```
-
-2. Tilde Expansion.
-
-Examples:
-
-    ~             The value of $HOME
-    ~/foo         $HOME/foo
-    ~fred/foo     The subdirectory foo of the home directory of the user fred
-    ~+/foo        $PWD/foo
-    ~-/foo        ${OLDPWD-’~-’}/foo
-    ~N            The string that would be displayed by ‘dirs +N’
-    ~+N           The string that would be displayed by ‘dirs +N’
-    ~-N           The string that would be displayed by ‘dirs -N’
-
-3. Shell Parameter Expansion: See [parameter expansion](#param_expansion)
-4. Variable Substitution.
-5. Arithmetic Expansion: `$(( expression ))`.
-6. Command Substitution (done in a left-to-right fashion) `$(cmd)`.
-7. Process Substitution `<(list)` `>(list)`
-8. Word Splitting.
-9. Filename Expansion.
-
-# Debug
-
-    set -o xtrace
-
-see <https://www.shellcheck.net/>
-
-# Best practice
-
-Avoid `.sh` file name extension.
-
-Don't use `#!/bin/sh`, it's `bash`, not `sh`.
-
-Always use `[[` instead of `[`.
-
-Always use `$()` instead of \`\`.
-
-Always use built-in math instead of `expr`.
-
-Always quote sentences or strings that belong together, omit only when the
-specific situation requires unquoted behavior, like in `[[`.
-
-Just use function to run repeat commands.
-
-Put double quotes around every parameter expansion.
-
-PE is better then `sed` `awk` `cut`.
-
-DON'T EVER parse the output of `ls`, use globs instead.
-
-DON'T EVER test or filter filenames with grep, use globs and path expansion.
-
-Don't use cat to feed a single file's content to a filter, pass file name as
-parameter or use redirection.
-
-Use while loop to read the lines of file instead of for loop.
-
-The best way to always be compatible is to put your regex in a variable and
-expand that variable in `[[` without quotes.
-
-Never use `[`'s `-a` (use multiple `[` instead) or `-o`, always prefer `[[` if
-you can.
-
-If you have a list of things, you should always put it in an array.
-
-Change `IFS` in subshell to avoid change current shell's default.
-
-Don't use all-capital variable names in your scripts, unless they are
-environment variables.
-
-Send your custom error messages to the `stderr` FD.
-
-DO NOT use `cat` to pipe files to commands in your scripts, use redirection
-instead.
-
-You should keep your logic (your code) and your input (your data) separated.
-
-Herestrings should be preferred over pipes when sending output of a variable as
-stdin into a command.
-
-If you end up making a pipeline that consists of three or more applications, it
-is time to ask yourself whether you're doing things a smart way.
-
-# Portable Guide
-
-See `info autoconf`'s "portable shell" (need autoconf-doc installed).
+{{ some_var | inspect }}
