@@ -11,9 +11,9 @@ To make common tasks easier, Jekyll even adds a few handy filters of its own, al
 
 
 
-# Liquid Filters
+ Liquid Filters
 
-Relative URL
+#Relative URL
 
 Prepend baseurl config value to the input to convert a URL path into a relative URL. This is recommended for a site that is hosted on a subpath of a domain.
 
@@ -22,7 +22,7 @@ Prepend baseurl config value to the input to convert a URL path into a relative 
 /my-baseurl/assets/style.css
 
 
-Absolute URL
+#Absolute URL
 
 Prepend url and baseurl values to the input to convert a URL path to an absolute URL.
 
@@ -30,14 +30,14 @@ Prepend url and baseurl values to the input to convert a URL path to an absolute
 
 
 
-Inspect
+#Inspect
 
 Convert an object into its String representation for debugging.
 
 {{ some_var | inspect }}
 
 
-Date to XML Schema
+#Date to XML Schema
 
 Convert a Date into XML Schema (ISO 8601) format.
 
@@ -46,7 +46,7 @@ Convert a Date into XML Schema (ISO 8601) format.
 2008-11-07T13:07:54-08:00
 
 
-Date to RFC-822 Format
+#Date to RFC-822 Format
 
 Convert a Date into the RFC-822 format used for RSS feeds.
 
@@ -56,7 +56,7 @@ Mon, 07 Nov 2008 13:07:54 -0800
 
 
 
-Date to String
+#Date to String
 
 Convert a date to short format.
 
@@ -74,7 +74,7 @@ Format a date to ordinal, US, short format.
 Nov 7th, 2008
 
 
-Date to Long String
+#Date to Long String
 
 Format a date to long format.
 
@@ -83,13 +83,13 @@ Format a date to long format.
 07 November 2008
 
 
-Where
+#Where
 
 Select all the objects in an array where the key has the given value.
 
 {{ site.members | where:"graduation_year","2014" }}
 
-Where Expression
+#Where Expression
 
 Select all the objects in an array where the expression is true. 
 
@@ -104,20 +104,20 @@ Select all the objects in an array where the expression is true.
 
 
 
-XML Escape
+#XML Escape
 
 Escape some text for use in XML.
 
 {{ page.content | xml_escape }}
 
 
-Markdownify
+#Markdownify
 
 Convert a Markdown-formatted string into HTML.
 
 {{ page.excerpt | markdownify }}
 
-Converting Sass/SCSS
+#Converting Sass/SCSS
 
 Convert a Sass- or SCSS-formatted string into CSS.
 
@@ -126,14 +126,14 @@ Convert a Sass- or SCSS-formatted string into CSS.
 {{ some_scss | scssify }}
 
 
-Data To JSON
+#Data To JSON
 
 Convert Hash or Array to JSON.
 
 {{ site.data.projects | jsonify }}
 
 
-Normalize Whitespace
+#Normalize Whitespace
 
 Replace any occurrence of whitespace with a single space.
 
