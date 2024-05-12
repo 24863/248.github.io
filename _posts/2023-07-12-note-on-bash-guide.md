@@ -4,92 +4,118 @@ layout: post
 category: ref
 tags: [filters]
 
-excerpt: "This is a learning note when I reading the Bash Guide (links is in content).
-The majority content is extracted from the original resource and reorgnized. It
-serves to me as an quick recap or quick reference, may not suitable as an tutorial.
-But if you have some basic understanding of bash, it may be as helpful to you as
-to me."
+excerpt: "All of the standard Liquid filters are supported (see below).
+
+To make common tasks easier, Jekyll even adds a few handy filters of its own, all of which you can find on this page. You can also create your own filters using plugins."
 ---
 
-This is a learning note when I reading the Bash Guide (links is in content). The
-majority content is extracted from the original resource and reorgnized. It
-serves to me as an quick recap or quick reference, may not suitable as an
-tutorial. But if you have some basic understanding of bash, it may be as
-helpful to you as to me.
+All of the standard Liquid filters are supported (see below).
 
-# See
+To make common tasks easier, Jekyll even adds a few handy filters of its own, all of which you can find on this page. You can also create your own filters using plugins.
 
-* <http://mywiki.wooledge.org/BashGuide>
-* <https://wiki.bash-hackers.org/>
+# Liquid Filters
 
-# Concepts
+All of the standard Liquid [filters](#standard-liquid-filters) are supported (see below).
 
-BASH: Bourne Again Shell.
+To make common tasks easier, Jekyll even adds a few handy filters of its own,
+all of which you can find on this page. You can also create your own filters
+using [plugins](/docs/plugins/).
 
-Bash is written in C. it's merely a layer between system function calls and the
-user.
+<div class="mobile-side-scroller">
+<table>
+  <thead>
+    <tr>
+      <th>Description</th>
+      <th><span class="filter">Filter</span> and <span class="output">Output</span></th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for filter in site.data.jekyll_filters %}
+      <tr>
+        <td>
+          <p id="{{ filter.name | slugify }}" class="name"><strong>{{ filter.name }}</strong></p>
+          <p>
+            {{- filter.description -}}
+            {%- if filter.version_badge %}
+              <span class="version-badge" title="This filter is available from version {{ filter.version_badge }}">
+                {{- filter.version_badge -}}
+              </span>
+            {% endif -%}
+          </p>
+        </td>
+        <td class="align-center">
+          {%- for example in filter.examples %}
+            <p><code class="filter">{{ example.input }}</code></p>
+            {% if example.output %}<p><code class="output">{{ example.output }}</code></p>{% endif %}
+          {% endfor -%}
+        </td>
+      </tr>
+    {% endfor %}
+  </tbody>
+</table>
+</div>
 
-In bash, almost everything is a string: We need to be sure everything that needs
-to be separated is separated properly, and everything that needs to stay
-together stays together properly.
+### Options for the `slugify` filter
 
-Types of commands:
+The `slugify` filter accepts an option, each specifying what to filter.
+The default is `default`. They are as follows (with what they filter):
 
-* alias: a word mapped to string, only useful as simple textual shortcuts.
-* functions: a name mapped to a set of commands, more powerful alias.
-* builtins: functions already provided, like `[]` (is actually a function).
-* keywords: like builtin, but with special parsing rule apply to them, like `[[ ]]`.
-* executable / external / application.
+- `none`: no characters
+- `raw`: spaces
+- `default`: spaces and non-alphanumeric characters
+- `pretty`: spaces and non-alphanumeric characters except for `._~!$&'()+,;=@`
+- `ascii`: spaces, non-alphanumeric, and non-ASCII characters
+- `latin`: like `default`, except Latin characters are first transliterated (e.g. `àèïòü` to `aeiou`) {%- include docs_version_badge.html version="3.7.0" -%}.
 
-String VS Stream:
+### Detecting `nil` values with `where` filter {%- include docs_version_badge.html version="4.0" -%}
 
-* stream is read sequentially (you usually can't jump around).
-* stream is unidirectional (you can read from them, or write to them, but
-  typically not both).
-* stream can contain NUL bytes.
+You can use the `where` filter to detect documents and pages with properties that are `nil` or `""`. For example,
 
-# Basic
-
-See bash.bible.md.
-
-The amount of whitespace between arguments does not matter.
-
-Quotes (`"` or `'`) group everything inside them into a single argument.
-
-You should be very well aware of how expansion works see [Expansion](#expansion).
-
-# Script
-
-Typical interpreter directive, aka "shebang", "hashbang":
-
-    #!/bin/bash
-    #!/usr/bin/env bash
-
-Typical header:
-
-```bash
-#!/usr/bin/env bash
-# scriptname - a short explanation of the scripts purpose.
-#
-# Copyright (C) <date> <name>...
-#
-# scriptname [option] [argument] ...
+{% raw %}
+```liquid
+// Using `nil` to select posts that either do not have `my_prop`
+// defined or `my_prop` has been set to `nil` explicitly.
+{% assign filtered_posts = site.posts | where: 'my_prop', nil %}
 ```
+{% endraw %}
 
-Two ways to run scripts:
+{% raw %}
+```liquid
+// Using Liquid's special literal `empty` or `blank` to select
+// posts that have `my_prop` set to an empty value.
+{% assign filtered_posts = site.posts | where: 'my_prop', empty %}
+```
+{% endraw %}
 
-* `bash myscript`
-* `chmod +x myscript` and `./myscript`
+### Binary operators in `where_exp` filter {%- include docs_version_badge.html version="4.0" -%}
 
-To use a directory to hold your scripts:
+You can use Liquid binary operators `or` and `and` in the expression passed to the `where_exp` filter to employ multiple
+conditionals in the operation.
 
-    $ mkdir -p "$HOME/bin"
-    $ echo 'PATH="$HOME/bin:$PATH"' >> "$HOME/.bashrc
-    $ source "$HOME/.bashrc"
+For example, to get a list of documents on English horror flicks, one could use the following snippet:
 
-# Handle Options/Arguments
+{% raw %}
+```liquid
+{{ site.movies | where_exp: "item", "item.genre == 'horror' and item.language == 'English'" }}
+```
+{% endraw %}
 
-see <http://mywiki.wooledge.org/BashFAQ/035>
+Or to get a list of comic-book based movies, one may use the following:
+
+{% raw %}
+```liquid
+{{ site.movies | where_exp: "item", "item.sub_genre == 'MCU' or item.sub_genre == 'DCEU'" }}
+```
+{% endraw %}
+
+### Standard Liquid Filters
+
+For your convenience, here is the list of all [Liquid filters]({{ page.shopify_filter_url }}) with links to examples in the official Liquid documentation.
+
+{% for filter in page.shopify_filters %}
+- [{{ filter }}]({{ filter | prepend: page.shopify_filter_url | append: '/' }})
+{% endfor %}
+shFAQ/035>
 
 The best way to parse options and arguments is to do it manually. But this way
 does not handle single-letter options concatenated together (like -xvf). Fancy
