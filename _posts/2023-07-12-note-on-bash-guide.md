@@ -1,8 +1,8 @@
 ---
-title: "The Bash Guide Learning Notes"
+title: "Liquid Filters"
 layout: post
 category: ref
-tags: [linux, shell]
+tags: [filters]
 
 excerpt: "This is a learning note when I reading the Bash Guide (links is in content).
 The majority content is extracted from the original resource and reorgnized. It
