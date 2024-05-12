@@ -1,5 +1,5 @@
 ---
-title: "这个是课堂作业，其余为模板内容"
+title: "课堂作业"
 layout: post
 category: note
 tags: [Liquid Filters]
